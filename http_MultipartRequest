@@ -45,3 +45,51 @@ var uri = Uri.parse(ApiHelper.baseUrl + ApiEndpoints.policeRequest);
       print(response.body);
       Map<String, dynamic> responseData = json.decode(response.body);
       print(responseData);
+
+
+
+/////////// Dio //////////////////////////
+
+
+
+
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
+
+Future<void> uploadImage() async {
+  final XFile? image = await pickImage();
+
+  if (image == null) {
+    print("No image selected");
+    return;
+  }
+
+  String fileName = image.path.split('/').last;
+
+  FormData formData = FormData.fromMap({
+    "file": await MultipartFile.fromFile(
+      image.path,
+      filename: fileName,
+    ),
+  });
+
+  Dio dio = Dio();
+
+  try {
+    Response response = await dio.post(
+      "https://your-api.com/upload",
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      ),
+    );
+
+    print("Upload successful: ${response.data}");
+  } catch (e) {
+    print("Upload failed: $e");
+  }
+}
+
