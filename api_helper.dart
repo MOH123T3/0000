@@ -143,3 +143,114 @@ class ApiHelper {
     }
   }
 }
+
+
+import 'dart:async';
+import 'dart:convert';
+import 'package:belizepoliceresponse/core/constants/local/locale_keys.dart';
+import 'package:belizepoliceresponse/core/utils/toast_helper.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:http/http.dart' as http;
+
+import '../utils/sharedPrefsHelper.dart';
+
+class ApiHelper {
+  static const String baseUrl = "https://dev.bprservice.api.redoq.host/user";
+
+  /// Common method to handle HTTP requests
+  static Future<dynamic> request({
+    required String endpoint,
+    required String method,
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    SharedPrefsHelper sharedPrefsHelper = SharedPrefsHelper();
+    String token = await sharedPrefsHelper.getToken() ?? "";
+    final Uri url = Uri.parse("$baseUrl$endpoint");
+    headers ??= {
+      "Content-Type": "application/json",
+      "Authorization": token,
+    };
+    print('body - $body , token $token -- ' );
+    try {
+      http.Response response;
+
+      switch (method.toUpperCase()) {
+        case "GET":
+          response = await http
+              .get(url, headers: headers)
+              .timeout(Duration(seconds: 5));
+          break;
+        case "POST":
+          response =
+              await http.post(url, headers: headers, body: jsonEncode(body));
+          break;
+        case "PUT":
+          response =
+              await http.put(url, headers: headers, body: jsonEncode(body));
+          break;
+        case "DELETE":
+          response = await http.delete(url, headers: headers);
+          break;
+        default:
+          throw Exception("Invalid HTTP method: $method");
+      }
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 500) {
+        // ToastHelper.showToast(AppLocaleKeys.somethingWentWrong.tr(),
+        //     isSuccess: false);
+      } else {
+        // ToastHelper.showToast(AppLocaleKeys.somethingWentWrong.tr(),
+        //     isSuccess: false);
+        throw Exception("Error: ${response.statusCode}, ${response.body}");
+      }
+    } on TimeoutException {
+      ToastHelper.showToast(AppLocaleKeys.timeOut, isSuccess: false);
+    } catch (e) {
+      throw Exception("API Request Failed: $e");
+    }
+  }
+
+  /// GET request
+  static Future<dynamic> get(String endpoint,
+      {Map<String, String>? headers}) async {
+    return await request(endpoint: endpoint, method: "GET", headers: headers);
+  }
+
+  /// POST request
+  static Future<dynamic> post(String endpoint, Map<String, dynamic>? body,
+      {Map<String, String>? headers}) async {
+   
+
+    return await request(
+      endpoint: endpoint,
+      method: "POST",
+      body: body,
+      headers: headers,
+    );
+  }
+
+  // static Future<dynamic> post(String endpoint, Map<String, dynamic> body,
+  //     {Map<String, String>? headers}) async {
+
+  //   return await request(
+  //       endpoint: endpoint, method: "POST", body: body, headers: headers);
+  // }
+
+  /// PUT request
+  static Future<dynamic> put(String endpoint, Map<String, dynamic> body,
+      {Map<String, String>? headers}) async {
+    return await request(
+        endpoint: endpoint, method: "PUT", body: body, headers: headers);
+  }
+
+  /// DELETE request
+  static Future<dynamic> delete(String endpoint,
+      {Map<String, String>? headers}) async {
+    return await request(
+        endpoint: endpoint, method: "DELETE", headers: headers);
+  }
+}
+
