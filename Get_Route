@@ -1,0 +1,52 @@
+
+
+import 'package:flutter/material.dart';
+import 'package:myapp/presentation/screens/home_screen.dart';
+import 'package:get/get.dart';
+import 'package:myapp/routes/app_route.dart';
+
+void main(){
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      getPages: AppRoute.routes,
+      initialRoute: AppRoute.initAppRoute,
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
+
+
+
+//Common classs App Route
+
+
+import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/instance_manager.dart';
+import 'package:myapp/presentation/screens/home_screen.dart';
+
+class AppRoute {
+
+  static String initAppRoute = "/";
+  static String home = '/home';
+
+  static List <GetPage<dynamic>> routes = [
+    GetPage(name: AppRoute.initAppRoute, page: ()=> HomeScreen()),
+  GetPage(name: AppRoute.home, page: ()=> Dashbord())
+  ];
+}
+
+
+
+// Navigate 
+
+
+Get.toNamed(AppRoute.home);
